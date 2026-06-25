@@ -381,3 +381,66 @@ describe('Admin/Messages - Shady Meadows', () => {
     })
 
 })
+
+describe('Home - Shady Meadows', () => {
+
+    it('CP41 - Los datos de contacto deben ser idénticos en Home y Location', () => {
+        cy.visit('https://automationintesting.online/')
+        const datosEsperados = {
+            direccion: 'Shady Meadows B&B, Shadows valley, Newingtonfordburyshire, Dilbery, N1 1AA',
+            telefono: '012345678901',
+            email: 'fake@fakeemail.com'
+        }
+
+        cy.scrollTo('bottom')
+        cy.get('body').then(($body) => {
+            const footerText = $body.text();
+            expect(footerText).to.include(datosEsperados.direccion)
+            expect(footerText).to.include(datosEsperados.telefono)
+            expect(footerText).to.include(datosEsperados.email)
+
+            cy.contains('a', 'Location').click()
+
+            cy.get('body').then(($locationBody) => {
+                const locationText = $locationBody.text()
+                expect(locationText).to.include(datosEsperados.direccion)
+                expect(locationText).to.include(datosEsperados.telefono)
+                expect(locationText).to.include(datosEsperados.email)
+            })
+        })
+    })
+
+    describe('CP42 - Responsividad del logo', () => {
+
+        const resoluciones = [
+            { nombre: 'Desktop', width: 1920, height: 1080 },
+            { nombre: 'Tablet', width: 768, height: 1024 },
+            { nombre: 'Mobile', width: 375, height: 812 }
+        ]
+
+        resoluciones.forEach((resolucion) => {
+            it(`El logo debe verse correctamente en ${resolucion.nombre} (${resolucion.width}x${resolucion.height})`, () => {
+                cy.viewport(resolucion.width, resolucion.height)
+                cy.visit('https://automationintesting.online/')
+
+                cy.get('.navbar-brand').should('be.visible')
+                cy.get('.navbar-brand').should(($logo) => {
+                    const logoElement = $logo[0]
+                    const rect = logoElement.getBoundingClientRect()
+                    expect(rect.width).to.be.greaterThan(0)
+                    expect(rect.height).to.be.greaterThan(0)
+
+                    if (resolucion.width <= 768) {
+                        expect(rect.width).to.be.lessThan(resolucion.width * 0.8)
+                    }
+                })
+
+                cy.get('.navbar-brand').should('have.css', 'visibility', 'visible')
+                cy.get('.navbar-brand').should('have.css', 'opacity').and('not.eq', '0')
+                cy.get('.navbar-brand').click()
+                cy.url().should('eq', 'https://automationintesting.online/')
+            })
+        })
+    })
+
+})
