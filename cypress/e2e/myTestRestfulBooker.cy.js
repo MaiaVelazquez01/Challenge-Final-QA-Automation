@@ -190,7 +190,7 @@ describe('Booking - Shady Meadows', () => {
 
     it('CP15 - Reserva con dato Phone de 22 caracteres', () => {
         cy.intercept('POST', '**/api/booking').as('reservarConPhoneInvalido')
-        
+
         cy.fixture('datosReserva').then((data) => {
             const input = data.datosConPhoneDe22Caracteres
 
@@ -201,6 +201,39 @@ describe('Booking - Shady Meadows', () => {
         })
 
         cy.validarErrorReserva('@reservarConPhoneInvalido')
+    })
+
+    it.only('CP16 - Validar que el sistema calcula correctamente el precio total de la reserva', () => {
+
+        cy.contains('a', /rooms/i).click({ force: true })
+
+        cy.get('input[type="text"]').eq(0).type('25/06/2026')
+        cy.get('input[type="text"]').eq(1).type('28/06/2026')
+
+        cy.contains('button', /check availability/i).click({ force: true })
+
+        cy.wait(3000)
+
+        cy.get('#rooms .card').first().within(() => {
+            cy.contains(/book now|reserve/i).click({ force: true })
+        })
+
+        cy.contains(/price summary/i).should('be.visible')
+
+        cy.get('body').then(($body) => {
+
+            const montos = [...$body.text().matchAll(/£(\d+)/g)]
+                .map(m => Number(m[1]))
+
+            const subtotal = montos.at(-4)
+            const cleaningFee = montos.at(-3)
+            const serviceFee = montos.at(-2)
+            const total = montos.at(-1)
+
+            expect(total).to.equal(subtotal + cleaningFee + serviceFee)
+
+        })
+
     })
 
 })
