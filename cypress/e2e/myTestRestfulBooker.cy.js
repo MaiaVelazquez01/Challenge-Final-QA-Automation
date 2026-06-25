@@ -203,7 +203,7 @@ describe('Booking - Shady Meadows', () => {
         cy.validarErrorReserva('@reservarConPhoneInvalido')
     })
 
-    it.only('CP16 - Validar que el sistema calcula correctamente el precio total de la reserva', () => {
+    it('CP16 - Validar que el sistema calcula correctamente el precio total de la reserva', () => {
 
         cy.contains('a', /rooms/i).click({ force: true })
 
@@ -233,6 +233,33 @@ describe('Booking - Shady Meadows', () => {
             expect(total).to.equal(subtotal + cleaningFee + serviceFee)
 
         })
+
+    })
+
+})
+
+describe('Contacto - Shady Meadows', () => {
+
+    it('CP28 - Envío exitoso del formulario de contacto con datos válidos', () => {
+
+        cy.visit('https://automationintesting.online/')
+
+        cy.contains('a', /contact|contact us/i).click({ force: true })
+
+        cy.fixture('datosReserva').then(({ datosContactoValidos }) => {
+
+            cy.get('#name').type(datosContactoValidos.Name)
+            cy.get('#email').type(datosContactoValidos.Email)
+            cy.get('#phone').type(datosContactoValidos.Phone)
+            cy.get('#subject').type(datosContactoValidos.Subject)
+            cy.get('#description').type(datosContactoValidos.Description)
+
+        })
+
+        cy.contains('button', /submit|send|enviar/i).click({ force: true })
+
+        cy.contains(/thanks for getting in touch/i)
+            .should('be.visible')
 
     })
 

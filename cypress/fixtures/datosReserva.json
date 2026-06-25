@@ -82,5 +82,12 @@
     "LastName": "Fernández",
     "Email": "pfernandez@gmail.com",
     "Phone": "1234567891123456789212"
+  },
+  "datosContactoValidos": {
+    "Name": "Maria",
+    "Email": "maria@test.com",
+    "Phone": "11223344556",
+    "Subject": "Consulta",
+    "Description": "Este es un mensaje de prueba válido"
   }
 }
