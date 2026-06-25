@@ -264,3 +264,76 @@ describe('Contacto - Shady Meadows', () => {
     })
 
 })
+
+describe('Admin panel - Shady Meadows', () => {
+
+    it('CP29 - Login exitoso con credenciales válidas', () => {
+
+        cy.visit('https://automationintesting.online/admin', {
+            failOnStatusCode: false
+        })
+
+        cy.get('#username')
+            .should('be.visible')
+            .type('admin')
+
+        cy.get('#password')
+            .should('be.visible')
+            .type('password')
+
+        cy.get('#doLogin')
+            .click()
+
+        cy.url({ timeout: 10000 })
+            .should('include', '/admin')
+
+        cy.contains(/rooms/i, { timeout: 10000 })
+            .should('be.visible')
+    })
+
+    it('CP30 - Login con contraseña incorrecta', () => {
+        cy.fixture('credencialesAdmin').then((data) => {
+            cy.visit('https://automationintesting.online/admin', { failOnStatusCode: false })
+
+            cy.get('#username').type(data.adminValido.Username)
+            cy.get('#password').type('contraseña_incorrecta')
+            cy.get('#doLogin').click()
+            cy.contains("Invalid credentials").should("be.visible")
+
+        })
+    })
+
+    it('CP31 - Login solo con usuario, dejando password vacio', () => {
+        cy.fixture('credencialesAdmin').then((data) => {
+            cy.visit('https://automationintesting.online/admin', { failOnStatusCode: false })
+            cy.get('#username').type(data.adminValido.Username)
+            cy.get('#doLogin').click()
+            cy.contains('Invalid credentials').should('be.visible')
+        })
+    })
+
+    it('CP32 - visualizacion y lectura de mensajes de clientes', () => {
+        cy.visit('https://automationintesting.online/', { failOnStatusCode: false })
+        cy.contains('Shady Meadows', { timeout: 15000 }).should('be.visible')
+        
+        cy.get('#name').type('qa tester')
+        cy.get('#email').type('qa@tester.com')
+        cy.get('#phone').type('12345678901')
+        cy.get('#subject').type('Mensaje de prueba CP32')
+        cy.get('#description').type('Este mensaje es para verificar la lectura en el panel admin.')
+        cy.contains('Submit').click()
+        
+        cy.fixture('credencialesAdmin').then((data) => {
+            cy.visit('https://automationintesting.online/admin', { failOnStatusCode: false })
+            cy.get('#username').type(data.adminValido.Username)
+            cy.get('#password').type(data.adminValido.Password)
+            cy.get('#doLogin').click()
+
+            cy.contains('Messages').click()
+
+            cy.contains('Mensaje de prueba CP32').should('be.visible').click()
+            cy.contains('Este mensaje es para verificar la lectura en el panel admin.').should('be.visible')
+        })
+    })
+
+})
