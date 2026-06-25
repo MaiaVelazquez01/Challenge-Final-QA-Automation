@@ -315,14 +315,14 @@ describe('Admin panel - Shady Meadows', () => {
     it('CP32 - visualizacion y lectura de mensajes de clientes', () => {
         cy.visit('https://automationintesting.online/', { failOnStatusCode: false })
         cy.contains('Shady Meadows', { timeout: 15000 }).should('be.visible')
-        
+
         cy.get('#name').type('qa tester')
         cy.get('#email').type('qa@tester.com')
         cy.get('#phone').type('12345678901')
         cy.get('#subject').type('Mensaje de prueba CP32')
         cy.get('#description').type('Este mensaje es para verificar la lectura en el panel admin.')
         cy.contains('Submit').click()
-        
+
         cy.fixture('credencialesAdmin').then((data) => {
             cy.visit('https://automationintesting.online/admin', { failOnStatusCode: false })
             cy.get('#username').type(data.adminValido.Username)
@@ -334,6 +334,50 @@ describe('Admin panel - Shady Meadows', () => {
             cy.contains('Mensaje de prueba CP32').should('be.visible').click()
             cy.contains('Este mensaje es para verificar la lectura en el panel admin.').should('be.visible')
         })
+    })
+
+})
+
+describe('Admin/Messages - Shady Meadows', () => {
+
+    it('CP39 - Debería aparecer en el listado de mensajes con nombre y asunto', () => {
+
+        const timestamp = Date.now()
+        const nombreUnico = `Limite_${timestamp}`
+        const asuntoUnico = `Asunto_${timestamp}`
+        const mensajeLargo = 'A'.repeat(2000)
+
+        // Enviar mensaje
+        cy.visit('https://automationintesting.online/')
+        cy.get('[data-testid="ContactName"]').scrollIntoView().type(nombreUnico)
+        cy.get('[data-testid="ContactEmail"]').type(`limite_${timestamp}@test.com`)
+        cy.get('[data-testid="ContactPhone"]').type('112233445599')
+        cy.get('[data-testid="ContactSubject"]').type(asuntoUnico)
+        cy.get('[data-testid="ContactDescription"]').type(mensajeLargo, { delay: 0 })
+        cy.contains('button', 'Submit').click()
+        cy.get('h3.h4.mb-4', { timeout: 30000 }).should('contain', 'Thanks for getting in touch');
+
+        // Verificar en Admin
+        cy.visit('https://automationintesting.online/admin')
+
+        cy.get('#username', { timeout: 10000 }).type('admin')
+        cy.get('#password').type('password')
+        cy.get('#doLogin').click()
+
+        cy.url().should('include', '/admin', { timeout: 10000 })
+        cy.contains('Messages', { timeout: 10000 }).click()
+
+        // Verificar que el mensaje aparece en el listado
+        // Los mensajes están en div.row.detail
+        cy.get('div.row.detail', { timeout: 10000 })
+            .should('have.length.greaterThan', 0)
+
+        // Buscar el nombre y asunto en la página
+        cy.contains(nombreUnico).should('be.visible')
+        cy.contains(asuntoUnico).should('be.visible')
+
+        // Opcional: Verificar que el email NO aparece en el listado (solo en detalle)
+        cy.contains(`limite_${timestamp}@test.com`).should('not.exist')
     })
 
 })
