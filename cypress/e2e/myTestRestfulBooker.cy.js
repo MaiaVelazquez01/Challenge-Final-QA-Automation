@@ -338,6 +338,37 @@ describe('Admin panel - Shady Meadows', () => {
 
 })
 
+describe('Navegación - Shady Meadows', () => {
+    it('CP38 - Validar que el logo redirige a Home desde cualquier sección', () => {
+
+        // Array con las secciones a probar (según el menú de navegación)
+        const secciones = ['Rooms', 'Booking', 'Location', 'Contact', 'Admin']
+
+        // Recorrer cada sección
+        secciones.forEach((seccion) => {
+            // 1. Navegar a la página principal
+            cy.visit('https://automationintesting.online/')
+
+            // 2. Hacer clic en la sección del menú
+            cy.contains('nav a', seccion, { matchCase: false }).click()
+
+            // 3. Verificar que la URL cambió (estamos en la sección correcta)
+            cy.url().should('include', seccion.toLowerCase())
+
+            // 4. Hacer clic en el logo (está en la esquina superior izquierda)
+            // El logo es un elemento <a> con la clase "navbar-brand" o similar
+            cy.get('.navbar-brand').click()
+
+            // 5. Verificar que la URL es la Home
+            cy.url().should('eq', 'https://automationintesting.online/')
+
+            // 6. Verificar que el contenido principal está visible
+            cy.contains('Welcome to Shady Meadows').should('be.visible')
+            cy.contains('Book Now').should('be.visible')
+        })
+    })
+})
+
 describe('Admin/Messages - Shady Meadows', () => {
 
     it('CP39 - Debería aparecer en el listado de mensajes con nombre y asunto', () => {
@@ -380,6 +411,50 @@ describe('Admin/Messages - Shady Meadows', () => {
         cy.contains(`limite_${timestamp}@test.com`).should('not.exist')
     })
 
+})
+
+describe('CP40 - Validación de mensajes en Admin/Messages', () => {
+    let credenciales
+
+    before(() => {
+        cy.fixture('credencialesAdmin.json').then((data) => {
+            credenciales = data.adminValido
+        })
+    })
+
+    it('Debe mostrar los datos correctos al abrir un mensaje', () => {
+        cy.visit('https://automationintesting.online/admin')
+
+        cy.get('#username').type(credenciales.Username)
+        cy.get('#password').type(credenciales.Password)
+        cy.get('button[type="submit"]').click()
+
+        cy.contains('Messages').click()
+
+        // Esperar a que aparezcan los mensajes listados
+        cy.get('[data-testid^="messageDescription"]').should('be.visible')
+
+        cy.get('[data-testid^="messageDescription"]').then(($msgs) => {
+            const randomIndex = Math.floor(Math.random() * $msgs.length)
+            cy.wrap($msgs[randomIndex]).click()
+        })
+
+        // Validar los datos dentro del mensaje abierto
+        cy.get('[data-testid="message"]').within(() => {
+            // Verifica que el campo "From" exista y tenga texto
+            cy.contains('From:').parent().invoke('text').should('match', /From:\s+\w+/)
+
+            // Verifica que el teléfono tenga solo números
+            cy.contains('Phone:').parent().invoke('text').should('match', /Phone:\s+\d+/)
+
+            // Verifica que el email tenga formato válido
+            cy.contains('Email:').parent().invoke('text').should('match', /Email:\s+\S+@\S+\.\S+/)
+        })
+
+        // Validar el texto general del mensaje
+        cy.contains('You have a new booking!').should('exist')
+        cy.contains('Close').should('be.visible')
+    })
 })
 
 describe('Home - Shady Meadows', () => {
