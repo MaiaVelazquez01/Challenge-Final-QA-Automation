@@ -9,7 +9,7 @@
 | Tobias Cabrera    | [tobicabrera14@gmail.com](mailto:tobicabrera14@gmail.com)         |
 | Alejandra Vazquez | [alevazdom70@gmail.com](mailto:alevazdom70@gmail.com)             |
 | Irai Bocco        | [ircastro333@gmail.com](mailto:ircastro333@gmail.com)             |
-| Dayana Herrera    | [](mailto:)
+| Dayana Herrera    | [milendayana@gmail.com](mailto:milendayana@gmail.com)
 
 ---
 
